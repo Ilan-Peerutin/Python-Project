@@ -137,8 +137,8 @@ class TauProtein(Protein):
 
     # --- Advanced/General aggregation logic ---
     def count_phosphorylated_residues(self):
-        # Count the number of phosphorylated residues in the sequence
-        return sum(1 for aa in self.sequence if hasattr(aa, 'PTM') and aa.PTM == "Phospho")
+        # Count the number of phosphorylated sites (probability > 0.5)
+        return sum(1 for p in self.phosphorylation_sites.values() if p > 0.5)
     
     def detect_aggregation_motifs(self):
         # Detect aggregation-prone motifs in the tau sequence
@@ -198,11 +198,10 @@ class TauProtein(Protein):
                     P_new = P_new * -1
                 
                 prob_array.append(P_new)
-
+                
             last_probs[site] = prob_array
 
         transposed = zip(*last_probs.values())
-
         site_probabilities = [sum(timepoint_probs) / len(timepoint_probs) for timepoint_probs in transposed]
 
         return site_probabilities
@@ -258,23 +257,3 @@ class TauProtein(Protein):
             self.truncation_aa = trunc_aa
         else:
             raise ValueError("No sequence to truncate.") 
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    import Environment as env
-
-    # Example environment and tau protein
-    environment = env.Environment(temperature=39, kinase_level=1.5, oxidative_stress=0.2)
-    tau = TauProtein(isoform='4R')
-
-    # Simulate over 100 timepoints
-    timepoints = np.arange(1, 50)
-
-    probabilities = tau.update_state(environment, timepoints)
-
-    plt.plot(timepoints, probabilities, marker='o')
-    plt.xlabel('Time')
-    plt.ylabel('Average Phosphorylation Probability')
-    plt.title('Per-Site Phosphorylation Probability Given Environmental Factors')
-    plt.grid(True)
-    plt.show()

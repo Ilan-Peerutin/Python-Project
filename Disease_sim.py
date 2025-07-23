@@ -1,11 +1,11 @@
 from AA import AminoAcid
-from Protein import ProteinClass
+from Protein import Protein
 from typing import Optional, List, Tuple
 import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-def phosphorylation_constants(protein: ProteinClass, list_of_PTMs: Optional[List[Tuple[int, str]]] = None):
+def phosphorylation_constants(protein: Protein, list_of_PTMs: Optional[List[Tuple[int, str]]] = None):
     initial_phospo_constant=0.005
     initial_dephospo_constant=0.02
     acetyl_constant_ranges=[2,5,0.8,1]
@@ -53,7 +53,7 @@ def phosphorylation_constants(protein: ProteinClass, list_of_PTMs: Optional[List
 
     return pK, dpK
 
-def phosphorylation(protein: ProteinClass, phospho_k, dephospho_k):
+def phosphorylation(protein: Protein, phospho_k, dephospho_k):
     phospho_residues=0
     possible_phopho=0
     for aa in protein.sequence:
@@ -78,7 +78,7 @@ def phosphorylation(protein: ProteinClass, phospho_k, dephospho_k):
                     possible_phopho+=1
             case __ if aa.three_letter in {"Ser", "Thr", "Tyr"}:
                 if random.random()<dP:
-                    aa.add_PTM("Phospho")
+                    aa.add_PTM("Phosphorylation")
                     phospho_residues+=1
                     possible_phopho+=1
                 else:
@@ -86,33 +86,39 @@ def phosphorylation(protein: ProteinClass, phospho_k, dephospho_k):
 
     return phospho_residues/possible_phopho*100
 
-def phospo_over_time(protein: ProteinClass, time: int, list_of_PTMs: Optional[List[Tuple[int, str]]] = None):
+def phospo_over_time(protein: Protein, time: int, list_of_PTMs: Optional[List[Tuple[int, str]]] = None):
     p_percentage=np.zeros(time)
     for i in range(time):
         pK, dpK=phosphorylation_constants(protein,list_of_PTMs)
         p_percentage[i]=phosphorylation(protein,pK,dpK)
     return p_percentage
 
-tau_seq="MAEPRQEFEVMEDHAGTYGLGDRKDQGGYTMHQDQEGDTDAGLKESPLQTPTEDGSEEPGSETSDAKSTPTAEDVTAPLVDEGAPGKQAAAQPHTEIPEGTTAEEAGIGDTPSLEDEAAGHVTQARMVSKSKDGTGSDDKKAKGADGKTKIATPRGAAPPGQKGQANATRIPAKTPPAPKTPPSSGEPPKSGDRSGYSSPGSPGTPGSRSRTPSLPTPPTREPKKVAVVRTPPKSPSSAKSRLQTAPVPMPDLKNVKSKIGSTENLKHQPGGGKVQIINKKLDLSNVQSKCGSKDNIKHVPGGGSVQIVYKPVDLSKVTSKCGSLGNIHHKPGGGQVEVKSEKLDFKDRVQSKIGSLDNITHVPGGGNKKIETHKLTFRENAKAKTDHGAEIVYKSPVVSGDTSPRHLSNVSSTGSIDMVDSPQLATLADEVSASLAKQGL"
-tau_prot=ProteinClass("Tau",tau_seq)
-acetyl_sites = [
-    (163, "Acetyl"),
-    (174, "Acetyl"),
-    (180, "Acetyl"),
-]
+def run_and_plot_disease_simulation():
+    tau_seq="MAEPRQEFEVMEDHAGTYGLGDRKDQGGYTMHQDQEGDTDAGLKESPLQTPTEDGSEEPGSETSDAKSTPTAEDVTAPLVDEGAPGKQAAAQPHTEIPEGTTAEEAGIGDTPSLEDEAAGHVTQARMVSKSKDGTGSDDKKAKGADGKTKIATPRGAAPPGQKGQANATRIPAKTPPAPKTPPSSGEPPKSGDRSGYSSPGSPGTPGSRSRTPSLPTPPTREPKKVAVVRTPPKSPSSAKSRLQTAPVPMPDLKNVKSKIGSTENLKHQPGGGKVQIINKKLDLSNVQSKCGSKDNIKHVPGGGSVQIVYKPVDLSKVTSKCGSLGNIHHKPGGGQVEVKSEKLDFKDRVQSKIGSLDNITHVPGGGNKKIETHKLTFRENAKAKTDHGAEIVYKSPVVSGDTSPRHLSNVSSTGSIDMVDSPQLATLADEVSASLAKQGL"
+    tau_prot=Protein("Tau",tau_seq)
+    acetyl_sites = [
+        (163, "Acetyl"),
+        (174, "Acetyl"),
+        (180, "Acetyl"),
+    ]
 
-#phospho_data=phospo_over_time(tau_prot,180, acetyl_sites)
-phospho_data=phospo_over_time(tau_prot,180)
+    #phospho_data=phospo_over_time(tau_prot,180, acetyl_sites)
+    phospho_data=phospo_over_time(tau_prot,180)
 
 
 
-plt.figure(figsize=(10, 6))
-plt.plot(phospho_data, label='Phosphorylation %', color='mediumblue', linewidth=2)
-plt.title('Tau Phosphorylation Simulation Over Time')
-plt.xlabel('Time Steps')
-plt.ylabel('Phosphorylated Residues (%)')
-plt.ylim(0, 5)
-plt.grid(True, linestyle='--', alpha=0.5)
-plt.legend()
-plt.tight_layout()
-plt.show()
+    plt.figure(figsize=(10, 6))
+    plt.plot(phospho_data, label='Phosphorylation %', color='mediumblue', linewidth=2)
+    plt.title('Tau Phosphorylation Simulation Over Time')
+    plt.xlabel('Time Steps')
+    plt.ylabel('Phosphorylated Residues (%)')
+    plt.ylim(0, 5)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.legend()
+    plt.tight_layout()
+    print("Close the plot window to return to the menu.")
+    plt.show()
+
+# Remove or comment out any code at the top level that runs the simulation/plot!
+# if __name__ == "__main__":
+#     run_and_plot_disease_simulation()
